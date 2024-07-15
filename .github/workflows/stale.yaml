@@ -1,0 +1,22 @@
+name: "Stale Issue and Pull Request Marker"
+
+on:
+  schedule:
+    - cron: "*/1 * * * *" # Runs every minute
+  workflow_dispatch:
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/stale@v6
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        stale-issue-message: 'This issue has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs.'
+        stale-pr-message: 'This pull request has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs.'
+        days-before-stale: 1 # Set to 1 day for quicker testing
+        days-before-close: 1 # Set to 1 day for quicker testing
+        stale-issue-label: 'stale'
+        stale-pr-label: 'stale'
+        exempt-issue-labels: 'pinned,security'
+        exempt-pr-labels: 'pinned,security'
