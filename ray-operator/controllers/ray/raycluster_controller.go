@@ -669,6 +669,17 @@ func (r *RayClusterReconciler) reconcilePods(ctx context.Context, instance *rayv
 			return fmt.Errorf(reason)
 		}
 	} else if len(headPods.Items) == 0 {
+		headPod := headPods.Items[0]
+		// Retrieve the ServiceAccount associated with the instance
+		serviceAccount := &corev1.ServiceAccount{}
+		err := r.Get(ctx, client.ObjectKey{Name: headPod.Spec.ServiceAccountName, Namespace: instance.Namespace}, serviceAccount)
+		if err != nil {
+			return fmt.Errorf("failed to get ServiceAccount %s: %v", headPod.Spec.ServiceAccountName, err)
+		}
+		// Check if the ServiceAccount has imagePullSecrets
+		if len(serviceAccount.ImagePullSecrets) == 0 || serviceAccount.ImagePullSecrets == nil {
+			return fmt.Errorf("ServiceAccount %s has no imagePullSecrets, not creating a head Pod", serviceAccount.Name)
+		}
 		// Create head Pod if it does not exist.
 		logger.Info("reconcilePods", "Found 0 head Pods; creating a head Pod for the RayCluster.", instance.Name)
 		common.CreatedClustersCounterInc(instance.Namespace)
